@@ -5,10 +5,14 @@ This is a simple NGINX website that allows a user to send a tweet.
 ## You need to build and run the container using below commands:
 
 Build it:
-```docker build -t linux_tweet_app .```
+```
+docker build -t linux_tweet_app .
+```
 
 Run it:
-```docker run -d -p 80:80 linux_tweet_app```
+```
+docker run -d -p 80:80 linux_tweet_app
+```
 
 ## Access the app 
 
