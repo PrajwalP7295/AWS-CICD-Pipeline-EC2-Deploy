@@ -1,13 +1,21 @@
 # Linux Tweet App
 
-This is very simple NGINX website that allows a user to send a tweet. 
+This is a simple NGINX website that allows a user to send a tweet.
 
-It's mostly used as a sample application for Docker 101 workshops. 
-
-To use it:
+## You need to build and run the container using below commands:
 
 Build it:
-`docker build -t linux_tweet_app .`
+```
+docker build -t linux_tweet_app .
+```
 
 Run it:
-`docker container run --detach -p 80:80 linux_tweet_app`
+```
+docker run -d -p 80:80 linux_tweet_app
+```
+
+## Access the app 
+
+After the container is up and running, access the app using the `server_ip:80` on the web browser.
+
+The page contains some sample content and a button to redirect you to the **Twitter** website. 
