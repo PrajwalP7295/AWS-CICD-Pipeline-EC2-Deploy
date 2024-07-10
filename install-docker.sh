@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install docker on Amazon Linux EC2 
+# Install docker on Amazon Linux 2023 EC2
 
 sudo yum remove docker \
                 docker-client \

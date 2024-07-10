@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Install CodeDeploy Agent on Amazon Linux 2023 EC2
+
 sudo yum update                     # Update packages
 
 sudo yum install ruby wget -y       # Install Pre-requisites
@@ -9,8 +11,8 @@ CODEDEPLOY_BIN="/opt/codedeploy-agent/bin/codedeploy-agent"
 $CODEDEPLOY_BIN stop
 sudo yum erase codedeploy-agent -y
 
-mkdir /home/ec-user/codedeploy-agent
-cd /home/ec-user/codedeploy-agent
+mkdir /home/ec2-user/codedeploy-agent
+cd /home/ec2-user/codedeploy-agent
 
 # Download the CodeDeploy agent installer
 # Look here to check the respective bucket-name, reg-id : https://docs.aws.amazon.com/codedeploy/latest/userguide/resource-kit.html#resource-kit-bucket-names
