@@ -1,0 +1,21 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ec2-user/linux_tweet_app
+# permissions:
+#   - object: /home/ec2-user/linux_tweet_app
+#     pattern: "*.sh"
+#     owner: root
+#     mode: 755
+#     type: 
+#       - file
+hooks:
+  AfterInstall:
+    - location: /build.sh
+      # timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: /run.sh
+      # timeout: 300
+      runas: root
