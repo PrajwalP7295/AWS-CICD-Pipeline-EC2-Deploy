@@ -6,19 +6,19 @@ This is an NGINX website that allows the user to send a tweet.
 
 Clone the repository on local machine using `git clone`.
 
-**Build** :
+###### **Build** :
 
 ```
 docker build -t linux_tweet_app .
 ```
 
-**Run** :
+###### **Run** :
 
 ```
 docker run -d -p 80:80 linux_tweet_app
 ```
 
-**Access the app** :
+###### **Access the app** :
 
 After the container is up and running, access the app using the `server_ip:80` on the web browser.
 
@@ -43,7 +43,7 @@ AWS CodePipeline is a continuous delivery service that automates the building, t
 - Speed up delivery while improving quality
 - Integrate your existing tools 
 
-#### Some important concepts of CodePipeline are - 
+#### Some important concepts of CodePipeline - 
 
 **Pipeline** - A pipeline is a workflow construct that describes how software changes go through a release process. Each pipeline is made up of a series of stages.
 
@@ -129,24 +129,24 @@ git push -u origin main
 
 - Build artifacts bucket :
 
-    Create an S3 bucket to store the build artifacts produced by CodeBuild with the following properties - 
+Create an S3 bucket to store the build artifacts produced by CodeBuild with the following properties - 
 
-    1. View the **region** - `us-east-1`, in which the S3 bucket is being created and ensure it is same as that of the CodeCommit repository.
-    2. Name - `cicd-linux-tweet-app-build-artifacts`
-    3. Bucket type - `General Purpose`
-    4. Object Ownership - `ACLs disabled`
-    5. Disable `Block Public Access`
-    6. Enable `Bucket Versioning`
-    7. Use Default encryption - `Amazon S3 managed key (SSE-S3)`
+1. View the **region** - `us-east-1`, in which the S3 bucket is being created and ensure it is same as that of the CodeCommit repository.
+2. Name - `cicd-linux-tweet-app-build-artifacts`
+3. Bucket type - `General Purpose`
+4. Object Ownership - `ACLs disabled`
+5. Disable `Block Public Access`
+6. Enable `Bucket Versioning`
+7. Use Default encryption - `Amazon S3 managed key (SSE-S3)`
 
 
 - Pipeline artifacts bucket :
 
-    Create an S3 bucket to store the pipeline artifacts (Source and Build) produced by CodePipeline with the following properties -
+Create an S3 bucket to store the pipeline artifacts (Source and Build) produced by CodePipeline with the following properties -
 
-    1. Region - `us-east-1`, (same as build artifacts bucket)
-    2. Name - `cicd-linux-tweet-app-pipeline-artifacts`
-    3. Keep the remaining properties similar to the build artifacts bucket.
+1. Region - `us-east-1`, (same as build artifacts bucket)
+2. Name - `cicd-linux-tweet-app-pipeline-artifacts`
+3. Keep the remaining properties similar to the build artifacts bucket.
 
 #### Step 4 :- Create a [Private repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) in ECR registry
 
