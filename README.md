@@ -112,9 +112,9 @@ Log out of the Admin account and log in using the newly created user account.
 
 3. [Install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) **git** on your machine.
 
-4. Execute the below command on terminal - ```git clone <codecommit-repo-https-url>```
+4. Execute the following command on terminal - ```git clone <codecommit-repo-https-url>```
 
-This will prompt you to enter the Username and Password for the CodeCommit repository.
+    This will prompt you to enter the Username and Password for the CodeCommit repository.
 
 5. After cloning the repository, create the application files.
 
