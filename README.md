@@ -6,19 +6,19 @@ This is an NGINX website that allows the user to send a tweet.
 
 Clone the repository on local machine using `git clone`.
 
-###### **Build** :
+**Build** :
 
 ```
 docker build -t linux_tweet_app .
 ```
 
-###### **Run** :
+**Run** :
 
 ```
 docker run -d -p 80:80 linux_tweet_app
 ```
 
-###### **Access the app** :
+**Access the app** :
 
 After the container is up and running, access the app using the `server_ip:80` on the web browser.
 
@@ -108,11 +108,12 @@ Log out of the Admin account and log in using the newly created user account.
 
 1. Give a name to the repository - `linux_tweet_app`
 
-2. Copy the **Clone HTTPS URL** of the repository.
+2. Copy the **"Clone HTTPS URL"** of the repository.
 
 3. [Install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) **git** on your machine.
 
 4. Execute the below command on terminal - ```git clone <codecommit-repo-https-url>```
+
 This will prompt you to enter the Username and Password for the CodeCommit repository.
 
 5. After cloning the repository, create the application files.
