@@ -107,17 +107,14 @@ Log out of the Admin account and log in using the newly created user account.
 
 
 1. Give a name to the repository - `linux_tweet_app`
-
 2. Copy the **"Clone HTTPS URL"** of the repository.
-
 3. [Install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) **git** on your machine.
-
 4. Execute the following command on terminal - ```git clone <codecommit-repo-https-url>```
 
     This will prompt you to enter the Username and Password for the CodeCommit repository.
-
-5. After cloning the repository, create the application files.
-
+5. After cloning the repository, create the application files :
+    - [index.html](index.html)
+    - [Dockerfile](Dockerfile)
 6. Push the local source code to CodeCommit repository :
 ```
 git status 
@@ -155,6 +152,59 @@ Set the following properties to the private repository :
 
 1. Visibility settings - `Private`
 2. Repository name - `linux_tweet_app`
+
+#### Step 5 :- Create [CodeBuild project](https://docs.aws.amazon.com/codebuild/latest/userguide/getting-started-create-build-project-console.html)
+
+1. In the source code, create a file - `buildspec.yml`
+2. Refer the [buildspec.yml](buildspec.yml)
+
+    In this file, we have used an environment variable - `AWS_ACCOUNT_ID` in order to avoid publishing sensitive data. We can also use this approach to pass keys, passwords, etc. and set these environment variables during creation of build project.
+3. Push the buildspec.yml file to CodeCommit repository.
+4. Create a build project with following properties :
+    1. Project name - `linux_tweet_app`
+    2. Source provider - `AWS CodeCommit`
+        - Repository - `linux_tweet_app`
+        - Reference type - `branch`
+        - Branch name - `main`
+    3. Environment :
+        - Provisioning model - `On-demand`
+        - Environment image - `Managed image`
+        - Compute - `EC2`
+        - Operating system - `Amazon Linux` (of your choice)
+        - Runtime(s) - `Standard`
+        - Image - `aws/codebuild/amazonlinux2-x86_64-standard:5.0` (choose latest)
+        - Image version - `Always use the latest image for this runtime version`
+        - Service role - `New service role`
+            - Name - `linux_tweet_app_codeBuild_role`
+        - Additional configuration : 
+            - Enable the `Privileged` flag that allows you to build Docker images or your builds to get elevated privileges.
+            - Set the **Environment Variables** - 
+                - Name - `AWS_ACCOUNT_ID`
+                - Value - `<your-AWS-acc-ID>`
+    4. Build specifications - `Use a buildspec file` (keep the buildspec file in root directory of source code)
+    5. Artifacts :
+        - Type - `Amazon S3`
+        - Bucket name - `cicd-projects-artifacts-store`
+        - Name - `linux_tweet_app_artifacts.zip` (folder name to store the artifacts)
+        - Artifacts packaging - `Zip`
+
+> Do not build the project yet; the build will fail. The CodeBuild service needs permissions to access ECR since we are pushing our docker image to the ECR private repository.
+
+#### Step 6 :- Modify CodeBuild IAM role
+
+The default CodeBuild service role created during the build project setup does not have permissions to access the ECR private repository. So we are going to attach the required policy to the CodeBuild role.
+
+1. Go to **IAM** > **Roles** > **Search** `linux_tweet_app_codeBuild_role`
+2. Click on **Permissions** > **Add permissions** > **Attach policies**
+3. Search the below mentioned policies and click **Add permissions** - 
+    - `AmazonEC2ContainerRegistryFullAccess`
+    - `AmazonS3FullAccess` (required during CodePipeline)
+4. Now you can start the build process. 
+
+#### Step 7 :- Create IAM roles for deployment group service and EC2 instance
+
+
+        
 
 
 
