@@ -163,12 +163,12 @@ Set the following properties to the private repository :
     In this file, we have used an environment variable - `AWS_ACCOUNT_ID` in order to avoid publishing sensitive data. We can also use this approach to pass keys, passwords, etc. and set these environment variables during creation of build project.
 3. Push the buildspec.yml file to CodeCommit repository.
 4. Create a build project with following properties :
-    1. Project name - `linux_tweet_app`
-    2. Source provider - `AWS CodeCommit`
+    - Project name - `linux_tweet_app`
+    - Source provider - `AWS CodeCommit`
         - Repository - `linux_tweet_app`
         - Reference type - `branch`
         - Branch name - `main`
-    3. Environment :
+    - Environment :
         - Provisioning model - `On-demand`
         - Environment image - `Managed image`
         - Compute - `EC2`
@@ -183,8 +183,8 @@ Set the following properties to the private repository :
             - Set the **Environment Variables** - 
                 - Name - `AWS_ACCOUNT_ID`
                 - Value - `<your-AWS-acc-ID>`
-    4. Build specifications - `Use a buildspec file` (keep the buildspec file in root directory of source code)
-    5. Artifacts :
+    - Build specifications - `Use a buildspec file` (keep the buildspec file in root directory of source code)
+    - Artifacts :
         - Type - `Amazon S3`
         - Bucket name - `cicd-projects-artifacts-store`
         - Name - `linux_tweet_app_artifacts.zip` (folder name to store the artifacts)
@@ -196,14 +196,16 @@ Set the following properties to the private repository :
 
 The default CodeBuild service role created during the build project setup does not have permissions to access the ECR private repository. So we are going to attach the required policy to the CodeBuild role.
 
-1. Go to **IAM** > **Roles** > **Search** `linux_tweet_app_codeBuild_role`
+1. Go to **IAM** > **Roles** > **Search** - `linux_tweet_app_codeBuild_role`
 2. Click on **Permissions** > **Add permissions** > **Attach policies**
 3. Search the below mentioned policies and click **Add permissions** - 
     - `AmazonEC2ContainerRegistryFullAccess`
     - `AmazonS3FullAccess` (required during CodePipeline)
 4. Now you can start the build process. 
 
-#### Step 7 :- Create IAM roles for deployment group service and EC2 instance
+#### Step 7 :- Create IAM roles for CodeDeploy service and EC2 instance
+
+
 
 
         
