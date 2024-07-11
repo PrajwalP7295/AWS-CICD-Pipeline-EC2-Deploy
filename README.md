@@ -6,6 +6,8 @@ This is an NGINX website that allows the user to send a tweet.
 
 Clone the repository on local machine using `git clone`.
 
+[Install docker](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html) on local machine.
+
 **Build** :
 
 ```
@@ -212,7 +214,7 @@ The default CodeBuild service role created during the build project setup does n
 
 
 
-Install docker - https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html
+
 
 Install CodeDeploy Agent - https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-cli.html
 
