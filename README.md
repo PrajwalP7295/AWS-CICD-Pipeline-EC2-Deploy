@@ -27,12 +27,19 @@ After the container is up and running, access the app using the `server_ip:80` o
 ## AWS services used 
 
 - [Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
 - [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+
 - [AWS IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html)
+
 - [Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)
+
 - [AWS CodeCommit](https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html)
+
 - [AWS CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/welcome.html)
+
 - [AWS CodeDeploy](https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html)
+
 - [AWS CodePipeline](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html)
 
 ## AWS CodePipeline
@@ -88,20 +95,28 @@ After reviewing the necessary AWS services for this project, we can begin by dep
 Access your AWS console using your Admin account and create a user specifically for this project. 
 
 When creating the user, attach the following policies : 
+
 - AmazonEC2FullAccess
+
 - AmazonS3FullAccess
+
 - IAMFullAccess
+
 - AmazonEC2ContainerRegistryFullAccess
+
 - AWSCodeCommitFullAccess
+
 - AWSCodeBuildAdminAccess
+
 - AWSCodeDeployFullAccess
+
 - AWSCodePipelineFullAccess
 
-> After creating the user, download the CSV file that contains the Username and Password.
+> **NOTE**: After creating the user, download the CSV file that contains the Username and Password.
 
 We need to create **[HTTPS Git credentials for AWS CodeCommit](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html)** for this user, as this information is required to connect to CodeCommit.
 
-> Download the CSV file containing the Username and Password for CodeCommit.
+> **NOTE**: Download the CSV file containing the Username and Password for CodeCommit.
 
 Log out of the Admin account and log in using the newly created user account.
 
@@ -109,15 +124,23 @@ Log out of the Admin account and log in using the newly created user account.
 
 
 1. Give a name to the repository - `linux_tweet_app`
+
 2. Copy the **"Clone HTTPS URL"** of the repository.
+
 3. [Install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) **git** on your machine.
+
 4. Execute the following command on terminal - ```git clone <codecommit-repo-https-url>```
 
     This will prompt you to enter the Username and Password for the CodeCommit repository.
+
 5. After cloning the repository, create the application files :
+    
     - [index.html](index.html)
+    
     - [Dockerfile](Dockerfile)
+
 6. Push the local source code to CodeCommit repository :
+
 ```
 git status 
 git add .
@@ -132,11 +155,17 @@ git push -u origin main
 Create an S3 bucket to store the build artifacts produced by CodeBuild with the following properties - 
 
 1. View the **region** - `us-east-1`, in which the S3 bucket is being created and ensure it is same as that of the CodeCommit repository.
+
 2. Name - `cicd-linux-tweet-app-build-artifacts`
+
 3. Bucket type - `General Purpose`
+
 4. Object Ownership - `ACLs disabled`
+
 5. Disable `Block Public Access`
+
 6. Enable `Bucket Versioning`
+
 7. Use Default encryption - `Amazon S3 managed key (SSE-S3)`
 
 
@@ -145,7 +174,9 @@ Create an S3 bucket to store the build artifacts produced by CodeBuild with the 
 Create an S3 bucket to store the pipeline artifacts (Source and Build) produced by CodePipeline with the following properties -
 
 1. Region - `us-east-1`, (same as build artifacts bucket)
+
 2. Name - `cicd-linux-tweet-app-pipeline-artifacts`
+
 3. Keep the remaining properties similar to the build artifacts bucket.
 
 #### Step 4 :- Create a [Private repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) in ECR registry
@@ -153,21 +184,28 @@ Create an S3 bucket to store the pipeline artifacts (Source and Build) produced 
 Set the following properties to the private repository : 
 
 1. Visibility settings - `Private`
+
 2. Repository name - `linux_tweet_app`
 
 #### Step 5 :- Create [CodeBuild project](https://docs.aws.amazon.com/codebuild/latest/userguide/getting-started-create-build-project-console.html)
 
 1. In the source code, create a file - `buildspec.yml`
+
 2. Refer the [buildspec.yml](buildspec.yml)
 
     In this file, we have used an environment variable - `AWS_ACCOUNT_ID` in order to avoid publishing sensitive data. We can also use this approach to pass keys, passwords, etc. and set these environment variables during creation of build project.
+
 3. Push the buildspec.yml file to CodeCommit repository.
+
 4. Create a build project with following properties :
+
     - Project name - `linux_tweet_app`
+
     - Source provider - `AWS CodeCommit`
         - Repository - `linux_tweet_app`
         - Reference type - `branch`
         - Branch name - `main`
+
     - Environment :
         - Provisioning model - `On-demand`
         - Environment image - `Managed image`
@@ -183,24 +221,31 @@ Set the following properties to the private repository :
             - Set the **Environment Variables** - 
                 - Name - `AWS_ACCOUNT_ID`
                 - Value - `<your-AWS-acc-ID>`
+
     - Build specifications - `Use a buildspec file` (keep the buildspec file in root directory of source code)
+
     - Artifacts :
         - Type - `Amazon S3`
         - Bucket name - `cicd-projects-artifacts-store`
         - Name - `linux_tweet_app_artifacts.zip` (folder name to store the artifacts)
         - Artifacts packaging - `Zip`
 
-> Do not build the project yet; the build will fail. The CodeBuild service needs permissions to access ECR since we are pushing our docker image to the ECR private repository.
+> **NOTE**: Do not build the project yet; the build will fail. The CodeBuild service needs permissions to access ECR since we are pushing our docker image to the ECR private repository.
 
 #### Step 6 :- Modify CodeBuild IAM role
 
 The default CodeBuild service role created during the build project setup does not have permissions to access the ECR private repository. So we are going to attach the required policy to the CodeBuild role.
 
 1. Go to **IAM** > **Roles** > **Search** - `linux_tweet_app_codeBuild_role`
+
 2. Click on **Permissions** > **Add permissions** > **Attach policies**
+
 3. Search the below mentioned policies and click **Add permissions** - 
+
     - `AmazonEC2ContainerRegistryFullAccess`
+
     - `AmazonS3FullAccess` (required during CodePipeline)
+    
 4. Now you can start the build process. 
 
 #### Step 7 :- Create IAM roles for CodeDeploy service and EC2 instance
