@@ -96,21 +96,21 @@ Access your AWS console using your Admin account and create a user specifically 
 
 When creating the user, attach the following policies : 
 
-- AmazonEC2FullAccess
+- `AmazonEC2FullAccess`
 
-- AmazonS3FullAccess
+- `AmazonS3FullAccess`
 
-- IAMFullAccess
+- `IAMFullAccess`
 
-- AmazonEC2ContainerRegistryFullAccess
+- `AmazonEC2ContainerRegistryFullAccess`
 
-- AWSCodeCommitFullAccess
+- `AWSCodeCommitFullAccess`
 
-- AWSCodeBuildAdminAccess
+- `AWSCodeBuildAdminAccess`
 
-- AWSCodeDeployFullAccess
+- `AWSCodeDeployFullAccess`
 
-- AWSCodePipelineFullAccess
+- `AWSCodePipelineFullAccess`
 
 > **NOTE**: After creating the user, download the CSV file that contains the Username and Password.
 
@@ -127,17 +127,28 @@ Log out of the Admin account and log in using the newly created user account.
 
 2. Copy the **"Clone HTTPS URL"** of the repository.
 
+![Git-Clone-Url](media/git-clone-url.png)
+
 3. [Install](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) **git** on your machine.
 
 4. Execute the following command on terminal - ```git clone <codecommit-repo-https-url>```
 
     This will prompt you to enter the Username and Password for the CodeCommit repository.
 
+
+![Git-Clone-Repo](media/git-clone-verify.png)
+
 5. After cloning the repository, create the application files :
     
     - [index.html](index.html)
     
     - [Dockerfile](Dockerfile)
+
+    - [build.sh](build.sh) 
+
+    - [run.sh](run.sh)
+
+![Create-App-Files](media/create-app-files.png)
 
 6. Push the local source code to CodeCommit repository :
 
@@ -152,32 +163,32 @@ git push -u origin main
 
 - Build artifacts bucket :
 
-Create an S3 bucket to store the build artifacts produced by CodeBuild with the following properties - 
+    Create an S3 bucket to store the build artifacts produced by CodeBuild with the following properties - 
 
-1. View the **region** - `us-east-1`, in which the S3 bucket is being created and ensure it is same as that of the CodeCommit repository.
+    1. View the **region** - `us-east-1`, in which the S3 bucket is being created and ensure it is same as that of the CodeCommit repository.
 
-2. Name - `cicd-linux-tweet-app-build-artifacts`
+    2. Name - `cicd-linux-tweet-app-build-artifacts`
 
-3. Bucket type - `General Purpose`
+    3. Bucket type - `General Purpose`
 
-4. Object Ownership - `ACLs disabled`
+    4. Object Ownership - `ACLs disabled`
 
-5. Disable `Block Public Access`
+    5. Disable `Block Public Access`
 
-6. Enable `Bucket Versioning`
+    6. Enable `Bucket Versioning`
 
-7. Use Default encryption - `Amazon S3 managed key (SSE-S3)`
+    7. Use Default encryption - `Amazon S3 managed key (SSE-S3)`
 
 
 - Pipeline artifacts bucket :
 
-Create an S3 bucket to store the pipeline artifacts (Source and Build) produced by CodePipeline with the following properties -
+    Create an S3 bucket to store the pipeline artifacts (Source and Build) produced by CodePipeline with the following properties -
 
-1. Region - `us-east-1`, (same as build artifacts bucket)
+    1. Region - `us-east-1`, (same as build artifacts bucket)
 
-2. Name - `cicd-linux-tweet-app-pipeline-artifacts`
+    2. Name - `cicd-linux-tweet-app-pipeline-artifacts`
 
-3. Keep the remaining properties similar to the build artifacts bucket.
+    3. Keep the remaining properties similar to the build artifacts bucket.
 
 #### Step 4 :- Create a [Private repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) in ECR registry
 
@@ -221,6 +232,7 @@ Set the following properties to the private repository :
             - Set the **Environment Variables** - 
                 - Name - `AWS_ACCOUNT_ID`
                 - Value - `<your-AWS-acc-ID>`
+        ![Set Env Var](media/set-build-env-var.png)
 
     - Build specifications - `Use a buildspec file` (keep the buildspec file in root directory of source code)
 
@@ -245,23 +257,283 @@ The default CodeBuild service role created during the build project setup does n
     - `AmazonEC2ContainerRegistryFullAccess`
 
     - `AmazonS3FullAccess` (required during CodePipeline)
-    
+
 4. Now you can start the build process. 
+
+![Build Success](media/build-success.png)
 
 #### Step 7 :- Create IAM roles for CodeDeploy service and EC2 instance
 
+- IAM role for **CodeDeploy** 
 
+    This role will be used by the CodeDeploy service to deploy our application on the EC2 instance. 
 
+    1. Go to **IAM** > **Roles** > **Create role**
 
+    2. Select the following properties - 
+
+        - Trusted entity type - `AWS service`
+
+        - Service or use case - `CodeDeploy`
+
+        This will attach the `AWSCodeDeployRole` policy to the role we are creating.
+
+    3. Enter name - `linux_tweet_app_codeDeploy_role`
+
+    4. Review the properties and create role.
+
+- IAM role for **EC2** instance
+
+    We will attach this role to our EC2 instance where we are going to deploy our application.
+
+    1. Click - **Create role**
+
+    2. Select the following properties - 
+
+        - Trusted entity type - `AWS service`
+
+        - Service or use case - `EC2`
+
+    3. Attach the below mentioned policies to this role - 
+
+        - `AmazonEC2RoleforAWSCodeDeploy`
+
+        - `AmazonS3FullAccess`
+
+        - `AWSCodeDeployFullAccess`
+
+    4. Enter name - `linux_tweet_app_ec2_codeDeploy_role`
+
+    5. Review the properties and create role.
+
+#### Step 8 :- Create an EC2 instance
+
+We need to create an EC2 instance to deploy our application.
+
+1. Go to **EC2** > **Instances** > **Launch Instances**
+
+2. Enter name - `linux_tweet_app`
+
+3. OS Images - `Amazon Linux 2023 AMI` (Free-tier)
+
+4. Instance type - `t2.micro`
+
+5. Key pair - Select an existing key pair or create a new one.
+
+6. Choose an existing security group or create a new one with following inboud rules :
+
+    - `Allow SSH traffic from Anywhere` - Port 22
+
+    - `Allow HTTPS traffic from the internet` - Port 443
+
+    - `Allow HTTP traffic from the internet` - Port 80
+
+7. Keep the storage as default - `8 GiB gp3` Root volume.
+
+8. In **Advanced details**, choose **IAM instance profile** - `linux_tweet_app_ec2_codeDeploy_role`.
+
+#### Step 9 :- Install Docker and CodeDeploy agent 
+
+After the EC2 instance - `linux_tweet_app`, is in `Running` state, SSH into the instance using the key pair attached to it.
+
+> You can use MobaXterm, Terminus, etc. as SSH clients.
+
+- Install Docker 
+
+    You can either run the script [install-docker.sh](install-docker.sh) or can refer the [Docker install doc](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html#install-docker-instructions).
+
+    - Run script - 
+
+        1. Create the script :
+
+            ```
+            nano install-docker.sh
+            ```
         
+        2. Provide `Execute` permissions to the script :
+
+            ```
+            chmod +x install-docker.sh
+            ```
+
+        3. Execute the script :
+
+            ```
+            ./install-docker.sh
+            ```
+
+        This will install docker on the EC2 instance.
+
+    ![Install Docker](media/install-docker.png)
+
+- Install CodeDeploy agent
+
+    Run the script [install-codeDeploy-agent.sh](install-codeDeploy-agent.sh) or refer the [AWS documentation](https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-linux.html).
+
+    - Run script - 
+
+        1. Create the script :
+
+            ```
+            nano install-codeDeploy-agent.sh
+            ```
+        
+        2. Provide `Execute` permissions to the script :
+
+            ```
+            chmod +x install-codeDeploy-agent.sh
+            ```
+
+        3. Execute the script :
+
+            ```
+            ./install-codeDeploy-agent.sh
+            ```
+
+        This will install CodeDeploy agent on the EC2 instance.
+
+    ![Install Deploy Agent](media/install-deploy-agent.png)
 
 
+    ![Deploy Agent Status](media/deploy-agent-status.png)
+
+#### Step 10 :- Set up CodeDeploy 
+
+- Create **`appspec.yml`** file in the source code
+
+    Refer [appspec.yml](appspec.yml). Here, we are using two scripts to deploy our application :
+    1. [build.sh](build.sh) - build docker image 
+
+    2. [run.sh](run.sh) - run the application docker image
+
+    Once you have created these files, push the source to CodeCommit.
+
+- Create Application -
+
+    1. Go to **CodeDeploy** > **Create application**
+
+    2. Set the properties - 
+    
+        - Application name - `linux_tweet_app`
+
+        - Compute platform - `EC2/on-premises`
+
+- Create Deployment Group - 
+
+    1. Deployment group name - `linux_tweet_app_dep_grp`
+
+    2. Service role - `linux_tweet_app_codeDeploy_role`
+
+    3. Deployment type - `In place`
+
+    4. Environment configuration - `Amazon EC2 instances`
+
+        - Key - `Name`
+        - Value - `linux_tweet_app`
+
+        This helps CodeDeploy to identify the instances using the tag "**Name**".
+
+    5. Install AWS CodeDeploy Agent - `Never`
+
+        We have installed the CodeDeploy Agent manually earlier to avoid version compatibility issues.
+
+    6. Deployment configuration - `CodeDeployDefault.AllAtOnce`
+
+    7. Disable `load balancing`.
+
+- Create Deployment - 
+
+    1. Deployment group - `linux_tweet_app_dep_grp`
+
+    2. Revision type - `Application is stored in Amazon S3`
+
+    3. Revision location - Copy the S3 URI of the build artifacts bucket - `cicd-linux-tweet-app-build-artifacts`
+
+![Deployment Success](media/deploy-success.png)
+
+#### Step 11 :- Create a pipeline in CodePipeline
+
+- Pipeline Settings - 
+
+    1. Pipeline name - `linux_tweet_app`
+
+    2. Execution mode - `Queued`
+
+    3. Service role - `New service role`
+
+        - Role Name - `linux_tweet_app_codePipeline_role`
+        
+    4. Advanced settings : 
+
+        - Artifact store - `Custom location`
+
+        - Bucket - `cicd-linux-tweet-app-pipeline-artifacts`
+
+- Source Stage - 
+
+    1. Source provider - `AWS CodeCommit`
+
+    2. Repository name - `linux_tweet_app`
+
+    3. Branch name - `main`
+
+    4. Detection options - `AWS CodePipeline`
+
+    5. Output artifact format - `CodePipeline default`
+
+- Build Stage - 
+
+    1. Build provider - `AWS CodeBuild`
+
+    2. Region - `US East (N. Virginia)`
+
+    3. Project name - `linux_tweet_app`
+
+    4. Build type - `Single Build`
+
+- Deploy Stage -
+
+    1. Deploy provider - `AWS CodeDeploy`
+
+    2. Region - `US East (N. Virginia)`
+
+    3. Application name - `linux_tweet_app`
+
+    4. Deployment group - `linux_tweet_app_dep_grp`
+
+After you have created the pipeline, it will be triggered automatically. The first time execution of the pipeline will **FAIL** since the CodePipeline service role does not have the necessary permissions to access ECR repository.
+
+#### Step 12 :- Modify CodePipeline IAM role.
+
+1. Go to **IAM** > **Roles** > **Search** - `linux_tweet_app_codePipeline_role`
+
+2. Click on **Permissions** > **Add permissions** > **Attach policies**
+
+3. Search the below mentioned policies and click **Add permissions** -
+
+    - `AmazonEC2ContainerRegistryFullAccess`
+
+    - `AmazonS3FullAccess`
+
+    - `AWSCodeBuildAdminAccess`
+
+    - `AWSCodeDeployFullAccess`
+
+4. Now go to **CodePipeline** > **linux_tweet_app**. Click **Release changes** to trigger the pipeline.
+
+![Pipeline Success - 1](media/pipe-success-1.png)
 
 
+![Pipeline Success - 2](media/pipe-success-2.png)
 
+## Accessing the Application 
 
+1. Go to **EC2** > **Instances** > **linux_tweet_app**
 
+2. Copy the **Public IPv4 address** of the instance.
 
+3. Open a New Tab on the browser and enter the public IP of the instance - `Public_IP:80`
 
-Install CodeDeploy Agent - https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-cli.html
+**VOILA !!**
 
+![Final output](media/final-output.png)
